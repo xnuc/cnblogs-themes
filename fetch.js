@@ -1,13 +1,16 @@
 async function fetch(url) {
     const req = new XMLHttpRequest()
-    req.open("GET", url, false)
+    req.open("GET", url, true)
     req.send(null)
-    return req.responseText;
+    req.onreadystatechange = function () {
+        if (req.readyState === 4 && req.status === 200) {
+            return (req.responseText)
+        }
+    }
 }
 
 (async _ => {
-    const _fetch = fetch("/")
-    console.log(1)
-    let rsp = await _fetch
-    console.log(rsp)
+    const rsp1 = fetch("/"), rsp2 = fetch("/")
+    const all = Promise.all([rsp1, rsp2])
+    console.log(await all)
 })()
