@@ -1,5 +1,5 @@
-import {Posts} from "./post";
+import {Posts} from "./posts";
 
 (async _ => {
-    console.log(await Posts("body #main .postTitle a", 10))
+    console.log(await Posts("body #main .postTitle", 100))
 })()

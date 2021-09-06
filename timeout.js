@@ -1,9 +1,9 @@
 export const TimeoutStatus = "Timeout Status"
 
-export function Timeout(timeout) {
+export function Timeout(timeout, rsp) {
     return new Promise(r => {
         setTimeout(_ => {
-            r(TimeoutStatus)
+            r(rsp)
         }, timeout)
     })
 }

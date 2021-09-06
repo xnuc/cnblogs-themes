@@ -7,9 +7,12 @@ function readyStateOver(req) {
     })
 }
 
-export async function Fetch(url) {
+export async function Fetch(url, f = r => {
+    return r
+}) {
     const req = new XMLHttpRequest()
     req.open("GET", url, true)
     req.send()
-    return await readyStateOver(req);
+    const rsp = await readyStateOver(req)
+    return f(rsp)
 }
