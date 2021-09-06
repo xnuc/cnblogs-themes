@@ -1,6 +1,5 @@
-import {Fetch} from "./fetch.js"
+import {Posts} from "./post";
 
 (async _ => {
-    const rsp = Fetch("//sm.ms/image/zJGEwF9M7StnAYs")
-    console.log(await rsp)
+    Posts("body #main_container #main .post h2 a")
 })()
