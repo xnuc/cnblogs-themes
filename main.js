@@ -1,5 +1,5 @@
 import {Posts} from "./posts";
 
 (async _ => {
-    console.log(await Posts("body #main .postTitle .postTitle2", 1000))
+    console.log(await Posts("body #main .postTitle", 100))
 })()
