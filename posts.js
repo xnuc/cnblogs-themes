@@ -1,6 +1,9 @@
 import {Fetch} from "./fetch";
 import {Timeout} from "./timeout";
 
+const topTitle = "[置顶]"
+const postDistinct = true
+
 async function dFetch(url) {
     return Fetch(url, rsp => {
         const _desc = rsp.match(/<br class="_more">([\s\S]*?)<br class="_more">/)
@@ -13,12 +16,18 @@ async function dFetch(url) {
     })
 }
 
+function isTop(e) {
+    if (e.title.indexOf(topTitle) === 0) return true
+    if (e.title.indexOf(topTitle) !== 0) return false
+}
+
 export async function Posts(selector, timeout) {
     const urlLoaders = []
     const posts = {}
     document.querySelectorAll(selector).forEach(e => {
         const url = e.href
         const title = e.innerText.trim()
+        if (posts[url] && postDistinct) return
         const f = dFetch(url)
         const t = Timeout(timeout, {url})
         urlLoaders.push(Promise.race([f, t]))
@@ -28,7 +37,9 @@ export async function Posts(selector, timeout) {
     postInfos.forEach(info => {
         posts[info.url] = {...posts[info.url], ...info}
     })
-    return Object.values(posts).sort((e1, e2) => {
-        return e2.date - e1.date
-    })
+    const byUnix = (p, n) => n.date - p.date
+    return [
+        ...Object.values(posts).filter(e => isTop(e)).sort(byUnix),
+        ...Object.values(posts).filter(e => !isTop(e)).sort(byUnix)
+    ]
 }
