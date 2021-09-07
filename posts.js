@@ -1,29 +1,34 @@
 import {Fetch} from "./fetch";
 import {Timeout} from "./timeout";
 
-async function dFetch(url, desc) {
-    return Fetch(url, _desc => {
-        const match = _desc.match(/<br class="_more">([\s\S]*?)<br class="_more">/)
-        desc = match ? match[1].replace(/\n/g, "") : desc
-        return {url, desc}
+async function dFetch(url) {
+    return Fetch(url, rsp => {
+        const _desc = rsp.match(/<br class="_more">([\s\S]*?)<br class="_more">/)
+            ?? rsp.match(/<div id="cnblogs_post_description" style="display: none">([\s\S]*?)<\/div>/)
+            ?? rsp.match(/<meta name="description" content="([\s\S]*?)" \/>/)
+        const _date = rsp.match(/<span id="post-date">([\s\S]*?)<\/span>/)
+        const desc = _desc[1].trim().replace(/\n/g, "")
+        const date = new Date(_date[1].trim()).getTime()
+        return {url, desc, date}
     })
 }
 
 export async function Posts(selector, timeout) {
-    const _descs = []
-    const posts = []
+    const urlLoaders = []
+    const posts = {}
     document.querySelectorAll(selector).forEach(e => {
-        const title = e.firstElementChild.innerText
-        const url = e.firstElementChild.href
-        const desc = e.nextElementSibling.innerText.match(/摘要：([\s\S]*?)阅读全文/)[1]
-        const f = dFetch(url, desc)
-        const t = Timeout(timeout, {url, desc})
-        _descs.push(Promise.race([f, t]))
-        posts[url] = {title, url}
+        const url = e.href
+        const title = e.innerText.trim()
+        const f = dFetch(url)
+        const t = Timeout(timeout, {url})
+        urlLoaders.push(Promise.race([f, t]))
+        posts[url] = {url, title}
     })
-    const descs = await Promise.all(_descs)
-    descs.forEach(e => {
-        posts[e.url] = {...posts[e.url], desc: e.desc}
+    const postInfos = await Promise.all(urlLoaders)
+    postInfos.forEach(info => {
+        posts[info.url] = {...posts[info.url], ...info}
     })
-    return posts.reverse()
+    return Object.values(posts).sort((e1, e2) => {
+        return e2.date - e1.date
+    })
 }
