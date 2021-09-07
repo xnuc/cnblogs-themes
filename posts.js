@@ -12,23 +12,15 @@ function postsFetch(url) {
         const _date = rsp.match(/<span id="post-date">([\s\S]*?)<\/span>/)
         const _readCnt = rsp.match(/<span id="post_view_count">([\s\S]*?)<\/span>/)
         const _commentCnt = rsp.match(/<span id="post_comment_count">([\s\S]*?)<\/span>/)
-        const _postID = rsp.match(/var cb_entryId = (.*?),/)
-        const _blogID = rsp.match(/cb_blogId = (.*?),/)
-        const _blogApp = rsp.match(/cb_blogApp = '(.*?)',/)
         const desc = _desc[1].trim().replace(/\n/g, "")
         const date = new Date(_date[1].trim()).getTime()
         const readCnt = _readCnt[1].trim()
         const commentCnt = _commentCnt[1].trim()
-        const postID = _postID[1].trim()
-        const blogID = _blogID[1].trim()
-        const blogApp = _blogApp[1].trim()
-        const tagAndCategory = await tagAndCategoryFetch(
-            `//www.cnblogs.com/${blogApp}/ajax/CategoriesTags.aspx?blogId=${blogID}&postId=${postID}`)
-        return {url, desc, date, readCnt, commentCnt, postID, blogID, blogApp, ...tagAndCategory}
+        return {url, desc, date, readCnt, commentCnt}
     })
 }
 
-async function tagAndCategoryFetch(url) {
+async function tagAndCategoryFetch(url, key) {
     return Fetch(url, rsp => {
         const tagAndCategory = Array.from(rsp.matchAll(/<a.+?href="(.+?)".*?>(.+?)<\/a>/g))
         const categories = []
@@ -39,7 +31,7 @@ async function tagAndCategoryFetch(url) {
         tagAndCategory.filter(e => e[1].indexOf("/tag/") !== -1).forEach(e => {
             tags.push({url: e[1], name: e[2]})
         })
-        return {tags, categories}
+        return {url: key, tags, categories}
     })
 }
 
@@ -48,18 +40,27 @@ function isTop(e) {
     if (e.title.indexOf(topTitle) !== 0) return false
 }
 
-export async function Posts(selector, timeout) {
+export async function Posts(postSelector, editSelector, timeout) {
     const urlLoaders = []
     const posts = {}
-    document.querySelectorAll(selector).forEach(e => {
-        const url = e.href
-        const title = e.innerText.trim()
-        if (posts[url] && postDistinct) return
-        const f = postsFetch(url)
+    const postEle = document.querySelectorAll(postSelector)
+    const editEle = document.querySelectorAll(editSelector)
+
+    for (let idx = 0; idx < Math.min(postEle.length, editEle.length); idx++) {
+        const post = postEle[idx]
+        const edit = editEle[idx]
+        const postID = edit.href.match(/[0-9].*/)[0]
+        const url = post.href
+        const title = post.innerText.trim()
+        if (posts[url] && postDistinct) continue
+        const p = postsFetch(url)
+        const c = tagAndCategoryFetch(`//www.cnblogs.com/${currentBlogApp}/ajax/CategoriesTags.aspx?blogId=${currentBlogId}&postId=${postID}`, url)
         const t = Timeout(timeout, {url})
-        urlLoaders.push(Promise.race([f, t]))
-        posts[url] = {url, title}
-    })
+        urlLoaders.push(Promise.race([p, t]))
+        urlLoaders.push(Promise.race([c, t]))
+        posts[url] = {url, title, postID}
+    }
+
     const postInfos = await Promise.all(urlLoaders)
     postInfos.forEach(info => {
         posts[info.url] = {...posts[info.url], ...info}
