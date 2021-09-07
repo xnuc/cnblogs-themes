@@ -8,7 +8,7 @@ function postsFetch(url) {
     return Fetch(url, async rsp => {
         const _desc = rsp.match(/<br class="_more">([\s\S]*?)<br class="_more">/)
             ?? rsp.match(/<div id="cnblogs_post_description" style="display: none">([\s\S]*?)<\/div>/)
-            ?? rsp.match(/<meta name="description" content="([\s\S]*?)" \/>/)
+            ?? rsp.match(/name="description" content="([\s\S]*?)">/)
         const _date = rsp.match(/<span id="post-date">([\s\S]*?)<\/span>/)
         const _readCnt = rsp.match(/<span id="post_view_count">([\s\S]*?)<\/span>/)
         const _commentCnt = rsp.match(/<span id="post_comment_count">([\s\S]*?)<\/span>/)
@@ -54,7 +54,8 @@ export async function Posts(postSelector, editSelector, timeout) {
         const title = post.innerText.trim()
         if (posts[url] && postDistinct) continue
         const p = postsFetch(url)
-        const c = tagAndCategoryFetch(`//www.cnblogs.com/${currentBlogApp}/ajax/CategoriesTags.aspx?blogId=${currentBlogId}&postId=${postID}`, url)
+        const c = tagAndCategoryFetch(
+            `//www.cnblogs.com/${currentBlogApp}/ajax/CategoriesTags.aspx?blogId=${currentBlogId}&postId=${postID}`, url)
         const t = Timeout(timeout, {url})
         urlLoaders.push(Promise.race([p, t]))
         urlLoaders.push(Promise.race([c, t]))
