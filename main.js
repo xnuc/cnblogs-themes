@@ -1,9 +1,8 @@
 import {updateHandles} from "./dom"
-import {PostsHandle} from "./posts"
-import {PostHandle} from "./post";
+import {PostHandle, PostsHandle} from "./posts"
 
 (async _ => {
-    updateHandles.push(PostHandle)
     updateHandles.push(PostsHandle)
+    updateHandles.push(PostHandle)
     document.addEventListener("DOMNodeInserted", e => updateHandles.forEach(handle => handle(e)))
 })()
