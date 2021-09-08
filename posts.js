@@ -1,14 +1,20 @@
 import {Fetch} from "./fetch";
 import {Timeout} from "./timeout";
+import {HasElement, IsLock, IsSign, Lock, Sign, Unlock} from "./register";
 
 const topTitle = "[置顶]"
 const postDistinct = true
+const posts = []
+
+const lock = "_posts"
+const sign = "posts"
 
 function postsFetch(url) {
     return Fetch(url, async rsp => {
-        const _desc = rsp.match(/<br class="_more">([\s\S]*?)<br class="_more">/)
+        const _desc = rsp.match(/>\s*?<br class="more">([\s\S]*?)<br class="more">\s/)
+            ?? rsp.match(/>\s*?<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<br class="more">\s/)
             ?? rsp.match(/<div id="cnblogs_post_description" style="display: none">([\s\S]*?)<\/div>/)
-            ?? rsp.match(/name="description" content="([\s\S]*?)">/)
+            ?? rsp.match(/name="description" content="([\s\S]*?)"/)
         const _date = rsp.match(/<span id="post-date">([\s\S]*?)<\/span>/)
         const _readCnt = rsp.match(/<span id="post_view_count">([\s\S]*?)<\/span>/)
         const _commentCnt = rsp.match(/<span id="post_comment_count">([\s\S]*?)<\/span>/)
@@ -42,7 +48,7 @@ function isTop(e) {
 
 export async function Posts(postSelector, editSelector, timeout) {
     const urlLoaders = []
-    const posts = {}
+    const postsMap = {}
     const postEle = document.querySelectorAll(postSelector)
     const editEle = document.querySelectorAll(editSelector)
 
@@ -52,23 +58,33 @@ export async function Posts(postSelector, editSelector, timeout) {
         const postID = edit.href.match(/[0-9].*/)[0]
         const url = post.href
         const title = post.innerText.trim()
-        if (posts[url] && postDistinct) continue
+        if (postsMap[url] && postDistinct) continue
         const p = postsFetch(url)
         const c = tagAndCategoryFetch(
             `//www.cnblogs.com/${currentBlogApp}/ajax/CategoriesTags.aspx?blogId=${currentBlogId}&postId=${postID}`, url)
         const t = Timeout(timeout, {url})
         urlLoaders.push(Promise.race([p, t]))
         urlLoaders.push(Promise.race([c, t]))
-        posts[url] = {url, title, postID}
+        postsMap[url] = {url, title, postID}
     }
 
     const postInfos = await Promise.all(urlLoaders)
     postInfos.forEach(info => {
-        posts[info.url] = {...posts[info.url], ...info}
+        postsMap[info.url] = {...postsMap[info.url], ...info}
     })
     const byUnix = (p, n) => n.date - p.date
-    return [
-        ...Object.values(posts).filter(e => isTop(e)).sort(byUnix),
-        ...Object.values(posts).filter(e => !isTop(e)).sort(byUnix)
-    ]
+    posts.push(
+        ...Object.values(postsMap).filter(e => isTop(e)).sort(byUnix),
+        ...Object.values(postsMap).filter(e => !isTop(e)).sort(byUnix)
+    )
+}
+
+export async function PostsHandle() {
+    if (IsSign(sign) || IsLock(lock) || !HasElement("body #main .postTitle .postTitle2") || !HasElement("body #main .postDesc a"))
+        return
+    Lock(lock)
+    await Posts("body #main .postTitle .postTitle2", "body #main .postDesc a", 1000)
+    Sign(sign)
+    Unlock(lock)
+    console.debug(sign, posts)
 }
