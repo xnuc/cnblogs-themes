@@ -17,7 +17,3 @@ export function Sign(sign) {
 export function IsSign(sign) {
     return document.querySelector("body").getAttribute(sign) === "loaded"
 }
-
-export function HasElement(selector) {
-    return !!document.querySelector(selector)
-}

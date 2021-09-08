@@ -1,13 +1,15 @@
 import {Fetch} from "./fetch";
 import {Timeout} from "./timeout";
-import {HasElement, IsLock, IsSign, Lock, Sign, Unlock} from "./register";
+import {IsLock, IsSign, Lock, Sign, Unlock} from "./register";
 
 const topTitle = "[置顶]"
 const postDistinct = true
 const posts = []
 
-const lock = "_posts"
-const sign = "posts"
+const postsLock = "_posts"
+const postsSign = "posts"
+const postLock = "_post"
+const postSign = "post"
 
 function postsFetch(url) {
     return Fetch(url, async rsp => {
@@ -46,11 +48,9 @@ function isTop(e) {
     if (e.title.indexOf(topTitle) !== 0) return false
 }
 
-export async function Posts(postSelector, editSelector, timeout) {
+export async function Posts(postEle, editEle, timeout) {
     const urlLoaders = []
     const postsMap = {}
-    const postEle = document.querySelectorAll(postSelector)
-    const editEle = document.querySelectorAll(editSelector)
 
     for (let idx = 0; idx < Math.min(postEle.length, editEle.length); idx++) {
         const post = postEle[idx]
@@ -80,11 +80,25 @@ export async function Posts(postSelector, editSelector, timeout) {
 }
 
 export async function PostsHandle() {
-    if (IsSign(sign) || IsLock(lock) || !HasElement("body #main .postTitle .postTitle2") || !HasElement("body #main .postDesc a"))
+    const postEle = Array.from(document.querySelectorAll("body #main .postTitle .postTitle2"))
+    const editEle = Array.from(document.querySelectorAll("body #main .postDesc a"))
+    if (IsSign(postsSign) || IsLock(postsLock) || postEle.length === 0 || editEle.length === 0)
         return
-    Lock(lock)
-    await Posts("body #main .postTitle .postTitle2", "body #main .postDesc a", 1000)
-    Sign(sign)
-    Unlock(lock)
-    console.debug(sign, posts)
+    Lock(postsLock)
+    await Posts(postEle, editEle, 1000)
+    Sign(postsSign)
+    Unlock(postsLock)
+    console.debug(postsSign, posts)
+}
+
+export async function PostHandle() {
+    const postEle = Array.from(document.querySelectorAll("body #main #post_detail .postTitle .postTitle2"))
+    const editEle = Array.from(document.querySelectorAll("body #main #post_detail .postDesc a")).filter(e => e.innerText === "编辑")
+    if (IsSign(postSign) || IsLock(postLock) || postEle.length === 0 || editEle.length === 0)
+        return
+    Lock(postLock)
+    await Posts(postEle, editEle, 1000)
+    Sign(postSign)
+    Unlock(postLock)
+    console.debug(postSign, posts)
 }
