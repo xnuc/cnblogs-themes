@@ -1,7 +1,7 @@
-export function Timeout(timeout, res) {
+export function Timeout(timeout, ret) {
     return new Promise(r => {
         setTimeout(_ => {
-            r(res)
+            r(ret)
         }, timeout)
     })
 }
