@@ -1,6 +1,6 @@
-import {Fetch} from "./fetch";
-import {Timeout} from "./timeout";
-import {IsLock, IsSign, Lock, Sign, Unlock} from "./register";
+import {Fetch} from "../net/fetch"
+import {Timeout} from "../util/timeout"
+import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/register"
 
 const topTitle = "[置顶]"
 const postDistinct = true
@@ -11,14 +11,16 @@ function postsFetch(url) {
             ?? rsp.match(/>\s*?<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<br class="more">\s/)
             ?? rsp.match(/<div id="cnblogs_post_description" style="display: none">([\s\S]*?)<\/div>/)
             ?? rsp.match(/name="description" content="([\s\S]*?)"/)
+        const _content = rsp.match(/<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<\/div>\s<div class="clear">/)
         const _date = rsp.match(/<span id="post-date">([\s\S]*?)<\/span>/)
         const _readCnt = rsp.match(/<span id="post_view_count">([\s\S]*?)<\/span>/)
         const _commentCnt = rsp.match(/<span id="post_comment_count">([\s\S]*?)<\/span>/)
         const desc = _desc[1].trim()
+        const content = _content[1].trim()
         const date = new Date(_date[1].trim()).getTime()
         const readCnt = _readCnt[1].trim()
         const commentCnt = _commentCnt[1].trim()
-        return {url, desc, date, readCnt, commentCnt}
+        return {url, desc, content, date, readCnt, commentCnt}
     })
 }
 
@@ -73,7 +75,8 @@ export async function Posts(postEle, editEle, timeout) {
     ]
 }
 
-export async function PostsHandle(flag, post, edit) {
+export async function PostsHandle(post, edit) {
+    const flag = "posts"
     Lock(`_${flag}`)
     const posts = await Posts(post, edit, 1000);
     Sign(flag)
@@ -89,29 +92,6 @@ export async function IndexHandle() {
         return
     const posts = await PostsHandle(flag, postEle, editEle)
     console.info(flag, posts)
-    IndexDOM(posts)
-}
-
-function IndexDOM(posts) {
-    const body = document.querySelector("body")
-    const table = document.createElement("table")
-    const tbody = document.createElement("tbody")
-    body.innerHTML += `<h1>欢迎访问冉尘的博客</h1>`
-    tbody.innerHTML += `<tr><th>标题</th><th>更新时间</th><th>描述</th><th>标签</th><th>分类</th></tr>`
-    posts.forEach(e => {
-        let tags = ''
-        e.tags.forEach(tag => {
-            tags += `<a href="${tag.url}">${tag.name}</a>`
-        })
-        let categories = ''
-        e.categories.forEach(category => {
-            categories += `<a href="${category.url}">${category.name}</a>`
-        })
-        tbody.innerHTML += `<tr><td><a href="${e.url}">${e.title}</a></td> <td>${new Date(e.date)}</td> <td>${e.desc}</td> <td>${tags}</td> <td>${categories}</td> </tr>`
-    })
-    table.appendChild(tbody)
-    table.setAttribute("border", "1")
-    body.appendChild(table)
 }
 
 export async function PostHandle() {
@@ -124,12 +104,6 @@ export async function PostHandle() {
     const posts = await PostsHandle(flag, postEle, editEle)
     posts[0] = {...posts[0], content: contentEle[0].innerHTML.trim()}
     console.info(flag, posts[0])
-    PostDOM(posts[0])
-}
-
-function PostDOM(post) {
-    const body = document.querySelector("body")
-    body.innerHTML += `<div><a href="${post.url}">${post.title}</a><div>${post.content}</div></div>`
 }
 
 export async function PAndTagHandle() {
