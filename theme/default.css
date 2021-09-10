@@ -1,0 +1,259 @@
+#top_nav, #home, #page_end_html {
+    display: none;
+}
+
+html {
+    font-size: 10px;
+}
+
+a {
+    text-decoration: none;
+}
+
+body {
+    font: 400 14px -apple-system, BlinkMacSystemFont, Segoe UI, Droid Sans, PingFang SC, Hiragino Sans GB, Droid Sans Fallback, Microsoft YaHei, sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+}
+
+.blog-theme {
+    max-width: 770px;
+    padding: 0 200px;
+    min-height: 100vh;
+    background-color: #fff;
+    margin: 0 auto;
+}
+
+.blog-theme .site-title {
+    margin: 0;
+    padding: 80px 10px 10px;
+}
+
+.blog-theme .site-branding {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-family: Menlo, Consolas, Monaco, Courier, Droid Sans Mono, monospace;
+    letter-spacing: .1em;
+}
+
+.blog-theme .site-branding .site-title {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.blog-theme .site-branding .site-title a {
+    display: inline-block;
+    color: #fff;
+    font-weight: bolder;
+    background-color: #999;
+    line-height: 3rem;
+    height: 3rem;
+    padding: 0 1rem;
+}
+
+.blog-theme .site-navigation {
+    text-align: center;
+}
+
+.blog-theme .site-navigation ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 1.6em;
+}
+
+.blog-theme .site-navigation ul li {
+    display: inline-block;
+    margin: 0 .5rem;
+}
+
+.blog-theme .site-navigation ul li a {
+    display: block;
+    color: #0074d9;
+    font-size: 1.6rem;
+    line-height: 2rem;
+    padding: 0 1rem;
+}
+
+.blog-theme .site-navigation ul:hover li a {
+    opacity: 1
+}
+
+.blog-theme .site-navigation ul li a:hover {
+    color: #004d90;
+}
+
+.blog-theme .site-navigation ul li a {
+    opacity: .5;
+    transition: opacity .3s ease-out;
+}
+
+article .article-title {
+    position: relative;
+    color: #212121;
+    line-height: 1.3;
+    text-align: center;
+    margin: 0;
+    padding: 0 2rem;
+    font-size: 2.4rem;
+    font-weight: 600;
+}
+
+article .article-title a {
+    display: block;
+    color: #212121;
+}
+
+article .article-top-meta {
+    position: relative;
+    color: #9e9e9e;
+    font-size: 1.3rem;
+    text-align: center;
+    margin: 1rem 0;
+}
+
+article .article-top-meta a {
+    color: #9e9e9e;
+}
+
+article blockquote {
+    padding-left: 15px;
+    line-height: 2rem;
+    border: 0;
+    border-left: 4px solid #0074d9;
+    margin: 0;
+}
+
+article .article-footer .article-meta a {
+    font-size: 1.3rem;
+    color: #9e9e9e;
+}
+
+article .article-footer .post-tags a:before {
+    content: "#";
+}
+
+article .article-footer .post-categories a:before {
+    content: ">";
+}
+
+article .article-footer .post-tags a:not(:last-of-type):after {
+    content: ",";
+    padding-right: 5px;
+}
+
+article .article-footer .post-categories a:not(:last-of-type):after {
+    content: ",";
+    padding-right: 5px;
+}
+
+article .article-footer .article-meta span:not(:first-of-type) {
+    margin-left: 5px;
+}
+
+article {
+    margin: 2rem 0;
+    line-height: 1.8;
+    position: relative;
+}
+
+article:not(:first-child):before {
+    content: '';
+    width: 150px;
+    height: 1px;
+    background-color: #e0e0e0;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    margin-left: -75px;
+}
+
+article .article-content {
+    margin: 4rem 0;
+    color: #424242;
+}
+
+@media (min-width: 768px) {
+    article {
+        padding: 8rem 0;
+    }
+}
+
+.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0.5em;
+    background: #002b36;
+    color: #839496;
+}
+
+.hljs-comment,
+.hljs-quote {
+    color: #586e75;
+}
+
+/* Solarized Green */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-addition {
+    color: #859900;
+}
+
+/* Solarized Cyan */
+.hljs-number,
+.hljs-string,
+.hljs-meta .hljs-meta-string,
+.hljs-literal,
+.hljs-doctag,
+.hljs-regexp {
+    color: #2aa198;
+}
+
+/* Solarized Blue */
+.hljs-title,
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+    color: #268bd2;
+}
+
+/* Solarized Yellow */
+.hljs-attribute,
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-class .hljs-title,
+.hljs-type {
+    color: #b58900;
+}
+
+/* Solarized Orange */
+.hljs-symbol,
+.hljs-bullet,
+.hljs-subst,
+.hljs-meta,
+.hljs-meta .hljs-keyword,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-link {
+    color: #cb4b16;
+}
+
+/* Solarized Red */
+.hljs-built_in,
+.hljs-deletion {
+    color: #dc322f;
+}
+
+.hljs-formula {
+    background: #073642;
+}
+
+.hljs-emphasis {
+    font-style: italic;
+}
+
+.hljs-strong {
+    font-weight: bold;
+}

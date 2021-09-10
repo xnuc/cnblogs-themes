@@ -1,7 +1,7 @@
 import {UpdateHandles} from "../event/dom"
 import {PostsHandle} from "../event/posts"
 import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/register";
-import {PagerHandle} from "../event/pager";
+import {IndexPagerHandle, PagerHandle} from "../event/pager";
 
 (async _ => {
     const paths = window.location.pathname.split("/").filter(e => e !== '')
@@ -9,30 +9,25 @@ import {PagerHandle} from "../event/pager";
     }
     paths.push("")
     switch (paths[0]) {
-        // case "tag":
-        //     if (paths.shift()) UpdateHandles.push(PAndTagHandle)
-        //     document.addEventListener("DOMNodeInserted", e => UpdateHandles.forEach(handle => handle(e)))
-        //     break
-        case "p":
-            if (paths.shift()) UpdateHandles.push(PostHandle)
-            // if (!paths.shift()) UpdateHandles.push(PAndTagHandle)
+        case "tag":
+            if (paths.shift()) UpdateHandles.push(TagHandle)
             document.addEventListener("DOMNodeInserted", e => UpdateHandles.forEach(handle => handle(e)))
             break
-        // case "category":
-        //     UpdateHandles.push(CategoriesAndArchivesHandle)
-        //     document.addEventListener("DOMNodeInserted", e => UpdateHandles.forEach(handle => handle(e)))
-        //     break
-        // case "archive":
-        //     UpdateHandles.push(CategoriesAndArchivesHandle)
-        //     document.addEventListener("DOMNodeInserted", e => UpdateHandles.forEach(handle => handle(e)))
-        //     break
+        case "p":
+            if (paths.shift()) UpdateHandles.push(PostHandle)
+            if (!paths.shift()) UpdateHandles.push(PHandle)
+            document.addEventListener("DOMNodeInserted", e => UpdateHandles.forEach(handle => handle(e)))
+            break
+        case "category":
+            UpdateHandles.push(CategoryHandle)
+            document.addEventListener("DOMNodeInserted", e => UpdateHandles.forEach(handle => handle(e)))
+            break
         default:
             UpdateHandles.push(IndexHandle)
             document.addEventListener("DOMNodeInserted", e => UpdateHandles.forEach(handle => handle(e)))
     }
 })()
 
-// index needs site info posts info and page info...
 async function IndexHandle() {
     const flag = "index"
     const postEle = Array.from(document.querySelectorAll("body #main .postTitle .postTitle2"))
@@ -40,51 +35,201 @@ async function IndexHandle() {
     if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0)
         return
     Lock(`_${flag}`)
-    const url = document.querySelectorAll("body #header #blogTitle h1 a")[0].href
-    const title = document.querySelectorAll("body #header #blogTitle h1")[0].innerText.trim()
-    const subtitle = document.querySelectorAll("body #header #blogTitle h2")[0].innerText.trim()
-    const sites = {title, subtitle, url}
-    const res = await Promise.all([PostsHandle(postEle, editEle), PagerHandle()])
+    const sites = Sites()
+    const res = await Promise.all([PostsHandle(postEle, editEle), IndexPagerHandle()])
     const index = {sites, posts: res[0], pager: res[1]}
-    await IndexDOM(index)
     Sign(`${flag}`)
     Unlock(`_${flag}`)
     console.info("index", index)
+    await IndexDOM(index)
 }
 
 async function IndexDOM(index) {
+    const theme = document.createElement("div")
+    theme.classList.add("blog-theme")
     const body = document.querySelector("body")
+    headerDOM(index.sites, theme)
+    PostsDOM(index.posts, theme)
+    PagerDOM(index.pager, `${index.sites.url}default.html`, theme)
+    body.appendChild(theme)
+    if (!document.querySelector("pre code")) return
+    await markdown_highlight()
+    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+}
+
+async function PHandle() {
+    const flag = "p"
+    const postEle = Array.from(document.querySelectorAll("body #main .PostList .vertical-middle"))
+    const editEle = Array.from(document.querySelectorAll("body #main .PostList .postDesc2 a"))
+    const pagerEle = Array.from(document.querySelectorAll("body #main .Pager"))
+    if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0)
+        return
+    Lock(`_${flag}`)
+    const sites = Sites()
+    const posts = await PostsHandle(postEle, editEle)
+    const pager = await PagerHandle(pagerEle[0], 1000)
+    const p = {sites, posts, pager}
+    Sign(`${flag}`)
+    Unlock(`_${flag}`)
+    console.info("p", p)
+    await PDOM(p)
+}
+
+async function PDOM(p) {
+    const theme = document.createElement("div")
+    theme.classList.add("blog-theme")
+    const body = document.querySelector("body")
+    headerDOM(p.sites, theme)
+    PostsDOM(p.posts, theme)
+    PagerDOM(p.pager, `${p.sites.url}p/`, theme)
+    body.appendChild(theme)
+    if (!document.querySelector("pre code")) return
+    await markdown_highlight()
+    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+}
+
+async function CategoryHandle() {
+    const flag = "category"
+    const postEle = Array.from(document.querySelectorAll("body #main .entrylistItem .entrylistItemTitle"))
+    const editEle = Array.from(document.querySelectorAll("body #main .entrylistItem .entrylistItemPostDesc a")).filter(e => e.innerText === "编辑")
+    const pagerEle = Array.from(document.querySelectorAll("body #main .pager"))
+    if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0)
+        return
+    Lock(`_${flag}`)
+    const sites = Sites()
+    const posts = await PostsHandle(postEle, editEle)
+    const pager = await PagerHandle(pagerEle[0], 1000)
+    const category = {sites, posts, pager}
+    Sign(`${flag}`)
+    Unlock(`_${flag}`)
+    console.info("category", category)
+    await CategoryDOM(category)
+}
+
+async function CategoryDOM(category) {
+    const theme = document.createElement("div")
+    const body = document.querySelector("body")
+    headerDOM(category.sites, theme)
+    PostsDOM(category.posts, theme)
+    PagerDOM(category.pager, `//${window.location.host}${window.location.pathname}`, theme)
+    body.appendChild(theme)
+    if (!document.querySelector("pre code")) return
+    await markdown_highlight()
+    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+}
+
+async function TagHandle() {
+    const flag = "category"
+    const postEle = Array.from(document.querySelectorAll("body #main .PostList .vertical-middle"))
+    const editEle = Array.from(document.querySelectorAll("body #main .PostList .postDesc2 a"))
+    const pagerEle = Array.from(document.querySelectorAll("body #main .Pager"))
+    if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0)
+        return
+    Lock(`_${flag}`)
+    const sites = Sites()
+    const posts = await PostsHandle(postEle, editEle)
+    const pager = await PagerHandle(pagerEle[0], 1000)
+    const tag = {sites, posts, pager}
+    Sign(`${flag}`)
+    Unlock(`_${flag}`)
+    console.info("tag", tag)
+    await TagDOM(tag)
+}
+
+async function TagDOM(tag) {
+    const theme = document.createElement("div")
+    theme.classList.add("blog-theme")
+    const body = document.querySelector("body")
+    headerDOM(tag.sites, theme)
+    PostsDOM(tag.posts, theme)
+    PagerDOM(tag.pager, `//${window.location.host}${window.location.pathname}default.html`, theme)
+    body.appendChild(theme)
+    if (!document.querySelector("pre code")) return
+    await markdown_highlight()
+    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+}
+
+
+function Sites() {
+    const url = document.querySelectorAll("body #header #blogTitle h1 a")[0].href
+    const title = document.querySelectorAll("body #header #blogTitle h1")[0].innerText.trim()
+    const subtitle = document.querySelectorAll("body #header #blogTitle h2")[0].innerText.trim()
+    return {title, subtitle, url};
+}
+
+async function PostHandle() {
+    const flag = "post"
+    const postEle = Array.from(document.querySelectorAll("body #main #post_detail .postTitle .postTitle2"))
+    const editEle = Array.from(document.querySelectorAll("body #main #post_detail .postDesc a")).filter(e => e.innerText === "编辑")
+    if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0)
+        return
+    Lock(`_${flag}`)
+    const sites = Sites()
+    const posts = await PostsHandle(postEle, editEle)
+    const post = {sites, post: posts[0]}
+    Sign(`${flag}`)
+    Unlock(`_${flag}`)
+    console.info(flag, post)
+    await PostDOM(post)
+}
+
+async function PostDOM(post) {
+    const theme = document.createElement("div")
+    theme.classList.add("blog-theme")
+    const body = document.querySelector("body")
+    headerDOM(post.sites, theme)
+    const tags = document.createElement("span")
+    post.post.tags.forEach(tag => {
+        tags.innerHTML += `<a href="${tag.url}">${tag.name}</a>`
+    })
+    const categories = document.createElement("span")
+    post.post.categories.forEach(category => {
+        categories.innerHTML += `<a href="${category.url}">${category.name}</a>`
+    })
+    const article = document.createElement("div")
+    article.innerHTML = `<article class=" "><h3 class="article-title"><a href="${post.post.url}"><span>${post.post.title}</span></a></h3><div class="article-top-meta"><span class="posted-on"><a href="${post.post.url}" rel="bookmark"><time class="entry-date published" datetime="${new Date(post.post.date)}">${new Date(post.post.date).toLocaleString()}</time></a></span></div><div class="article-content"><div class="entry">${post.post.content}</div></div><div class="article-footer"><div class="article-meta pull-left">${tags.outerHTML}${categories.outerHTML}</div></div></article>`
+    theme.appendChild(article)
+    body.appendChild(theme)
+    if (!document.querySelector("pre code")) return
+    await markdown_highlight()
+    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+}
+
+function headerDOM(sites, body) {
     const brand = document.createElement("div")
-    brand.innerHTML = `<div class="site-branding"><h1 class="site-title"><a href="${index.sites.url}">${index.sites.title}</a></h1><p class="site-description">${index.sites.subtitle}</p></div>`
+    brand.innerHTML = `<div class="site-branding"><h1 class="site-title"><a href="${sites.url}">${sites.title}</a></h1><p class="site-description">${sites.subtitle}</p></div>`
     body.appendChild(brand)
     const navigation = document.createElement("div")
-    navigation.innerHTML = `<nav class="site-navigation"><ul class=""><li><a href="${index.sites.url}">主页</a></li><li><a href="/">首页</a></li><li><a href="/">首页</a></li><li><a href="/">首页</a></li></ul></nav>`
+    navigation.innerHTML = `<nav class="site-navigation"><ul><li><a href="${sites.url}">主页</a></li><li><a href="${sites.url}p/">归档</a></li></ul></nav>`
     body.appendChild(navigation)
+}
+
+function PagerDOM(pager, url, body) {
+    const _pager = document.createElement("div")
+    if (pager.cur !== 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur - 1}"><</a><a href="${url}?page=1">1</a>`
+    if (pager.cur - 1 > 2) _pager.innerHTML += `...`
+    if (pager.cur - 1 > 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur - 1}">${pager.cur - 1}</a>`
+    _pager.innerHTML += `<a href="${url}?page=${pager.cur}">${pager.cur}</a>`
+    if (pager.page - pager.cur > 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur + 1}">${pager.cur + 1}</a>`
+    if (pager.page - pager.cur > 2) _pager.innerHTML += `...`
+    if (pager.cur !== pager.page) _pager.innerHTML += `<a href="${url}?page=${pager.page}">${pager.page}</a><a href="${url}?page=${pager.cur + 1}">></a>`
+    body.appendChild(_pager)
+}
+
+function PostsDOM(posts, body) {
     const articles = document.createElement("div")
-    index.posts.forEach(e => {
+    posts.forEach(e => {
         const tags = document.createElement("span")
+        tags.classList.add("post-tags")
         e.tags.forEach(tag => {
             tags.innerHTML += `<a href="${tag.url}">${tag.name}</a>`
         })
         const categories = document.createElement("span")
+        categories.classList.add("post-categories")
         e.categories.forEach(category => {
             categories.innerHTML += `<a href="${category.url}">${category.name}</a>`
         })
-        const article = document.createElement("div")
-        article.innerHTML = `<article class=" "><h3 class="article-title"><a href="${e.url}"><span>${e.title}</span></a></h3><div class="article-top-meta"><span class="posted-on"><a href="${e.url}" rel="bookmark"><time class="entry-date published" datetime="${new Date(e.date)}">${new Date(e.date).toLocaleString()}</time></a></span></div><div class="article-content"><div class="entry">${e.desc}</div></div><div class="article-footer"><div class="article-meta pull-left">${tags.outerHTML}${categories.outerHTML}</div></div></article>`
-        articles.appendChild(article)
+        articles.innerHTML += `<article><h3 class="article-title"><a href="${e.url}"><span>${e.title}</span></a></h3><div class="article-top-meta"><span class="posted-on"><a href="${e.url}" rel="bookmark"><time class="entry-date published" datetime="${new Date(e.date)}">${new Date(e.date).toLocaleString()}</time></a></span></div><div class="article-content"><div class="entry">${e.desc}</div></div><div class="article-footer"><div class="article-meta pull-left">${tags.outerHTML}${categories.outerHTML}</div></div></article>`
     })
     body.appendChild(articles)
-    const pager = document.createElement("div")
-    if (index.pager.cur !== 1) pager.innerHTML += `<a href="${index.sites.url}default.html?page=${index.pager.cur - 1}"><</a><a href="${index.sites.url}default.html?page=1">1</a>`
-    if (index.pager.cur - 1 > 2) pager.innerHTML += `...`
-    if (index.pager.cur - 1 > 1) pager.innerHTML += `<a href="${index.sites.url}default.html?page=${index.pager.cur - 1}">${index.pager.cur - 1}</a>`
-    pager.innerHTML += `<a href="${index.sites.url}default.html?page=${index.pager.cur}">${index.pager.cur}</a>`
-    if (index.pager.page - index.pager.cur > 1) pager.innerHTML += `<a href="${index.sites.url}default.html?page=${index.pager.cur + 1}">${index.pager.cur + 1}</a>`
-    if (index.pager.page - index.pager.cur > 2) pager.innerHTML += `...`
-    if (index.pager.cur !== index.pager.page) pager.innerHTML += `<a href="${index.sites.url}default.html?page=${index.pager.page}">${index.pager.page}</a><a>></a>`
-    body.appendChild(pager)
-    if (!document.querySelector("pre code")) return
-    await markdown_highlight()
-    document.querySelector('pre code').innerHTML = hljs.highlightAuto(document.querySelector('pre code').innerHTML).value
 }
