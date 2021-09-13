@@ -1,5 +1,5 @@
 import {UpdateHandles} from "../event/dom"
-import {PostsHandle, CodeHighlightEngineURL} from "../event/posts"
+import {PostsHandle, CodeHighlightEngineURL, CodeHighlightStyleURL} from "../event/posts"
 import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/register";
 import {IndexPagerHandle, PagerHandle} from "../event/pager";
 import {Load} from "../util/load"
@@ -55,11 +55,18 @@ async function IndexDOM(index) {
     PagerDOM(index.pager, `${index.sites.url}default.html`, theme)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
-    console.log(CodeHighlightEngineURL)
-    Load(CodeHighlightEngineURL, async () => {
-        Prism.highlightAll()
-    })
-    // document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+    if (codeHighlightEngine === 1) {
+        Load(`//www.cnblogs.com/css/hljs${CodeHighlightStyleURL[1]}`, "css")
+        Load(CodeHighlightEngineURL, "js", async () => {
+            document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+        })
+    }
+    if (codeHighlightEngine === 2) {
+        Load(`//www.cnblogs.com/css/prismjs${CodeHighlightStyleURL[1]}`, "css")
+        Load(CodeHighlightEngineURL, "js", async () => {
+            Prism.highlightAll()
+        })
+    }
 }
 
 async function PHandle() {
@@ -198,7 +205,7 @@ async function PostDOM(post) {
     theme.appendChild(article)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
-    Load(CodeHighlightEngineURL, async () => {
+    Load(CodeHighlightEngineURL, "js", async () => {
         Prism.highlightAll()
     })
     // document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)

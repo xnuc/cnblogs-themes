@@ -1,19 +1,22 @@
-export function Load(url, callback) {
-    var script = document.createElement('script'), fn = callback || function () {
-    };
+export function Load(url, type, callback) {
+    const head = document.getElementsByTagName('head')[0]
+    if (type === "css") {
+        var link = document.createElement('link');
+        link.type = 'text/css';
+        link.rel = 'stylesheet';
+        link.href = url;
+        head.appendChild(link);
+    }
+    var script = document.createElement('script');
     script.type = 'text/javascript';
-    if (script.readyState) {
-        script.onreadystatechange = function () {
-            if (script.readyState == 'loaded' || script.readyState == 'complete') {
-                script.onreadystatechange = null;
-                fn();
+    script.src = url;
+    if (typeof (callback) == 'function') {
+        script.onload = script.onreadystatechange = function () {
+            if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete") {
+                callback();
+                script.onload = script.onreadystatechange = null;
             }
         };
-    } else {
-        script.onload = function () {
-            fn();
-        };
     }
-    script.src = url;
-    document.getElementsByTagName('head')[0].appendChild(script);
+    head.appendChild(script);
 }
