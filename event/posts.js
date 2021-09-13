@@ -4,6 +4,7 @@ import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/register"
 
 const topTitle = "[置顶]"
 const postDistinct = true
+export var CodeHighlightEngineURL
 
 function postsFetch(url) {
     return Fetch(url, async rsp => {
@@ -15,6 +16,7 @@ function postsFetch(url) {
         const _date = rsp.match(/<span id="post-date">([\s\S]*?)<\/span>/)
         const _readCnt = rsp.match(/<span id="post_view_count">([\s\S]*?)<\/span>/)
         const _commentCnt = rsp.match(/<span id="post_comment_count">([\s\S]*?)<\/span>/)
+        CodeHighlightEngineURL = rsp.match(/<script src="([\S]*?)" async onload="markdown_highlight\(\)"><\/script>/)[1]
         const desc = _desc[1].trim()
         const content = _content[1].trim()
         const date = new Date(_date[1].trim()).getTime()

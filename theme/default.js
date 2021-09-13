@@ -1,7 +1,9 @@
 import {UpdateHandles} from "../event/dom"
-import {PostsHandle} from "../event/posts"
+import {PostsHandle, CodeHighlightEngineURL} from "../event/posts"
 import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/register";
 import {IndexPagerHandle, PagerHandle} from "../event/pager";
+import {Load} from "../util/load"
+
 
 (async _ => {
     const paths = window.location.pathname.split("/").filter(e => e !== '')
@@ -53,8 +55,11 @@ async function IndexDOM(index) {
     PagerDOM(index.pager, `${index.sites.url}default.html`, theme)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
-    await markdown_highlight()
-    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+    console.log(CodeHighlightEngineURL)
+    Load(CodeHighlightEngineURL, async () => {
+        Prism.highlightAll()
+    })
+    // document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
 }
 
 async function PHandle() {
@@ -84,8 +89,10 @@ async function PDOM(p) {
     PagerDOM(p.pager, `${p.sites.url}p/`, theme)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
-    await markdown_highlight()
-    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+    Load(CodeHighlightEngineURL, async () => {
+        Prism.highlightAll()
+    })
+    // document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
 }
 
 async function CategoryHandle() {
@@ -191,8 +198,10 @@ async function PostDOM(post) {
     theme.appendChild(article)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
-    await markdown_highlight()
-    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+    Load(CodeHighlightEngineURL, async () => {
+        Prism.highlightAll()
+    })
+    // document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
 }
 
 function headerDOM(sites, body) {
