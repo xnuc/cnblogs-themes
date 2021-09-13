@@ -168,7 +168,7 @@ async function TagDOM(tag) {
     })
 }
 
-
+// post
 async function PostHandle() {
     const flag = "post"
     const postEle = Array.from(document.querySelectorAll("body #main #post_detail .postTitle .postTitle2"))
@@ -185,7 +185,6 @@ async function PostHandle() {
     await PostDOM(post)
 }
 
-// post
 async function PostDOM(post) {
     const theme = document.createElement("div")
     theme.classList.add("blog-theme")
