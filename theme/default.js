@@ -4,7 +4,7 @@ import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/register";
 import {IndexPagerHandle, PagerHandle} from "../event/pager";
 import {Load} from "../util/load"
 
-
+// route
 (async _ => {
     const paths = window.location.pathname.split("/").filter(e => e !== '')
     while (paths.shift() !== currentBlogApp && paths.length !== 0) {
@@ -30,6 +30,7 @@ import {Load} from "../util/load"
     }
 })()
 
+// index
 async function IndexHandle() {
     const flag = "index"
     const postEle = Array.from(document.querySelectorAll("body #main .postTitle .postTitle2"))
@@ -55,20 +56,14 @@ async function IndexDOM(index) {
     PagerDOM(index.pager, `${index.sites.url}default.html`, theme)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
-    if (codeHighlightEngine === 1) {
-        Load(`//www.cnblogs.com/css/hljs${CodeHighlightStyleURL[1]}`, "css")
-        Load(CodeHighlightEngineURL, "js", async () => {
-            document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
-        })
-    }
-    if (codeHighlightEngine === 2) {
-        Load(`//www.cnblogs.com/css/prismjs${CodeHighlightStyleURL[1]}`, "css")
-        Load(CodeHighlightEngineURL, "js", async () => {
-            Prism.highlightAll()
-        })
-    }
+    Load(CodeHighlightStyleURL, "css")
+    Load(CodeHighlightEngineURL, "js", async () => {
+        if (codeHighlightEngine === 1) document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+        else Prism.highlightAll()
+    })
 }
 
+// p
 async function PHandle() {
     const flag = "p"
     const postEle = Array.from(document.querySelectorAll("body #main .PostList .vertical-middle"))
@@ -96,12 +91,14 @@ async function PDOM(p) {
     PagerDOM(p.pager, `${p.sites.url}p/`, theme)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
-    Load(CodeHighlightEngineURL, async () => {
-        Prism.highlightAll()
+    Load(CodeHighlightStyleURL, "css")
+    Load(CodeHighlightEngineURL, "js", async () => {
+        if (codeHighlightEngine === 1) document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+        else Prism.highlightAll()
     })
-    // document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
 }
 
+// category
 async function CategoryHandle() {
     const flag = "category"
     const postEle = Array.from(document.querySelectorAll("body #main .entrylistItem .entrylistItemTitle"))
@@ -123,15 +120,20 @@ async function CategoryHandle() {
 async function CategoryDOM(category) {
     const theme = document.createElement("div")
     const body = document.querySelector("body")
+    theme.classList.add("blog-theme")
     headerDOM(category.sites, theme)
     PostsDOM(category.posts, theme)
     PagerDOM(category.pager, `//${window.location.host}${window.location.pathname}`, theme)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
-    await markdown_highlight()
-    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+    Load(CodeHighlightStyleURL, "css")
+    Load(CodeHighlightEngineURL, "js", async () => {
+        if (codeHighlightEngine === 1) document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+        else Prism.highlightAll()
+    })
 }
 
+// tag
 async function TagHandle() {
     const flag = "category"
     const postEle = Array.from(document.querySelectorAll("body #main .PostList .vertical-middle"))
@@ -159,17 +161,13 @@ async function TagDOM(tag) {
     PagerDOM(tag.pager, `//${window.location.host}${window.location.pathname}default.html`, theme)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
-    await markdown_highlight()
-    document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+    Load(CodeHighlightStyleURL, "css")
+    Load(CodeHighlightEngineURL, "js", async () => {
+        if (codeHighlightEngine === 1) document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+        else Prism.highlightAll()
+    })
 }
 
-
-function Sites() {
-    const url = document.querySelectorAll("body #header #blogTitle h1 a")[0].href
-    const title = document.querySelectorAll("body #header #blogTitle h1")[0].innerText.trim()
-    const subtitle = document.querySelectorAll("body #header #blogTitle h2")[0].innerText.trim()
-    return {title, subtitle, url};
-}
 
 async function PostHandle() {
     const flag = "post"
@@ -187,6 +185,7 @@ async function PostHandle() {
     await PostDOM(post)
 }
 
+// post
 async function PostDOM(post) {
     const theme = document.createElement("div")
     theme.classList.add("blog-theme")
@@ -206,9 +205,16 @@ async function PostDOM(post) {
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
     Load(CodeHighlightEngineURL, "js", async () => {
-        Prism.highlightAll()
+        if (codeHighlightEngine === 1) document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+        else Prism.highlightAll()
     })
-    // document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+}
+
+function Sites() {
+    const url = document.querySelectorAll("body #header #blogTitle h1 a")[0].href
+    const title = document.querySelectorAll("body #header #blogTitle h1")[0].innerText.trim()
+    const subtitle = document.querySelectorAll("body #header #blogTitle h2")[0].innerText.trim()
+    return {title, subtitle, url};
 }
 
 function headerDOM(sites, body) {
