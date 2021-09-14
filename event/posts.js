@@ -17,12 +17,10 @@ function postsFetch(url) {
         const _date = rsp.match(/<span id="post-date">([\s\S]*?)<\/span>/)
         const _readCnt = rsp.match(/<span id="post_view_count">([\s\S]*?)<\/span>/)
         const _commentCnt = rsp.match(/<span id="post_comment_count">([\s\S]*?)<\/span>/)
-        const _codeHighlightEngineURL = rsp.match(/<script src="([\S]*?)" async onload="markdown_highlight\(\)"><\/script>/)
-        const _codeHighlightStyleURL = rsp.match(/<link type="text\/css" rel="stylesheet" href="\/css\/prismjs([\s\S]*?)" \/>/)
+        CodeHighlightEngineURL = rsp.match(/<script src="([\S]*?)" async onload="markdown_highlight\(\)"><\/script>/)[1]
+        CodeHighlightStyleURL = rsp.match(/<link type="text\/css" rel="stylesheet" href="\/css\/prismjs([\s\S]*?)" \/>/)
             ?? rsp.match(/<link type="text\/css" rel="stylesheet" href="\/css\/hljs([\s\S]*?)" \/>/)
-        CodeHighlightEngineURL = _codeHighlightEngineURL[1]
-        CodeHighlightStyleURL = codeHighlightEngine === 2 ? `//www.cnblogs.com/css/prismjs${_codeHighlightStyleURL[1]}`
-            : `//www.cnblogs.com/css/hljs${_codeHighlightStyleURL[1]}`
+        console.log(CodeHighlightStyleURL)
         const desc = _desc[1].trim()
         const content = _content[1].trim()
         const date = new Date(_date[1].trim()).getTime()

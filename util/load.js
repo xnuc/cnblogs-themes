@@ -1,13 +1,13 @@
 export function Load(url, type, callback) {
     const head = document.getElementsByTagName('head')[0]
     if (type === "css") {
-        const link = document.createElement('link');
+        var link = document.createElement('link');
         link.type = 'text/css';
         link.rel = 'stylesheet';
         link.href = url;
         head.appendChild(link);
     }
-    const script = document.createElement('script');
+    var script = document.createElement('script');
     script.type = 'text/javascript';
     script.src = url;
     if (typeof (callback) == 'function') {
