@@ -1,2 +1,2 @@
 build:
-	esbuild theme/default.js --bundle --minify --outfile=out.js
+	esbuild theme/default.js --bundle --minify --outfile=esbuild.js

@@ -275,3 +275,17 @@ article blockquote p {
 .article-footer .article-meta span:not(:first-of-type) {
     margin-left: 5px;
 }
+
+/*pager*/
+.blog-pager {
+    display: flex;
+}
+
+.blog-pager a {
+    display: flex;
+    border-top: 1px solid #eee;
+    padding: 0 .5rem;
+    margin: 0 .5rem;
+    font-size: 1.6rem;
+    line-height: 2rem;
+}

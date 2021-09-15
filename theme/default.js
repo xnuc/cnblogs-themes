@@ -238,6 +238,7 @@ function headerDOM(sites, body) {
 
 function PagerDOM(pager, url, body) {
     const _pager = document.createElement("div")
+    _pager.classList.add("blog-pager")
     if (pager.cur !== 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur - 1}"><</a><a href="${url}?page=1">1</a>`
     if (pager.cur - 1 > 2) _pager.innerHTML += `...`
     if (pager.cur - 1 > 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur - 1}">${pager.cur - 1}</a>`
