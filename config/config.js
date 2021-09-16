@@ -9,4 +9,5 @@ export const Config = {
     skinName: skinName,
     visitorUserId: visitorUserId,
     codeHighlightEngine: codeHighlightEngine,
+    enableCodeLineNumber: enableCodeLineNumber,
 }
