@@ -20,3 +20,11 @@ export function Sign(sign) {
 export function IsSign(sign) {
     return document.querySelector("head").getAttribute(sign) === loaded
 }
+
+export async function Sync(obj, func) {
+    Lock(`_${obj}`)
+    const r = await func()
+    Sign(obj)
+    Unlock(`_${obj}`)
+    return r
+}

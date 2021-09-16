@@ -1,6 +1,6 @@
 import {UpdateHandles} from "../event/dom"
 import {PostsHandle, CodeHighlightEngineURL, CodeHighlightStyleURL} from "../event/posts"
-import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/register";
+import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/sync";
 import {IndexPagerHandle, PagerHandle} from "../event/pager";
 import {Load} from "../util/load"
 
@@ -74,7 +74,7 @@ async function PHandle() {
     Lock(`_${flag}`)
     const sites = Sites()
     const posts = await PostsHandle(postEle, editEle)
-    const pager = await PagerHandle(pagerEle[0], 1000)
+    const pager = await PagerHandle(pagerEle[0]?.innerHTML)
     const p = {sites, posts, pager}
     Sign(`${flag}`)
     Unlock(`_${flag}`)

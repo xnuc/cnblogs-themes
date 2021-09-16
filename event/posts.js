@@ -1,6 +1,6 @@
 import {Fetch} from "../net/fetch"
 import {Timeout} from "../util/timeout"
-import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/register"
+import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/sync"
 
 const topTitle = "[置顶]"
 const postDistinct = true
