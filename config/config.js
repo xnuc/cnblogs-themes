@@ -8,4 +8,5 @@ export const Config = {
     isBlogOwner: isBlogOwner,
     skinName: skinName,
     visitorUserId: visitorUserId,
+    codeHighlightEngine: codeHighlightEngine,
 }

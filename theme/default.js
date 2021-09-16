@@ -40,7 +40,7 @@ async function IndexHandle() {
     await Sync(flag, EmptyFunc, async () => {
         const sites = Sites()
         const res = await Promise.all([PostsHandle(postEle, editEle), IndexPagerHandle()])
-        const index = {sites, posts: res[0], pager: res[1]}
+        const index = {sites, posts: res[0], ...res[1]}
         console.info("flag", index)
         IndexDOM(index)
     }, EmptyFunc)
@@ -52,7 +52,7 @@ function IndexDOM(index) {
     const body = document.querySelector("body")
     headerDOM(index.sites, theme)
     PostsDOM(index.posts, theme)
-    PagerDOM(index.pager, `${index.sites.url}default.html`, theme)
+    PagerDOM({cur: index.cur, page: index.page}, `${index.sites.url}default.html`, theme)
     body.appendChild(theme)
     if (!document.querySelector("pre code")) return
     Load(CodeHighlightStyleURL, "css")

@@ -1,8 +1,8 @@
 import {Fetch} from "../net/fetch"
-import {Timeout} from "../util/timeout"
-import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/sync"
+import {Config} from "../config/config";
+import {Timeout} from "../util/timeout";
 
-const topTitle = "[置顶]"
+const topToken = "[置顶]"
 const postDistinct = true
 export var CodeHighlightEngineURL
 export var CodeHighlightStyleURL
@@ -11,17 +11,17 @@ function postsFetch(url) {
     return Fetch(url, async rsp => {
         const _desc = rsp.match(/>\s*?<br class="more">([\s\S]*?)<br class="more">\s/)
             ?? rsp.match(/>\s*?<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<br class="more">\s/)
-            ?? rsp.match(/<div id="cnblogs_post_description" style="display: none">([\s\S]*?)<\/div>/)
-            ?? rsp.match(/name="description" content="([\s\S]*?)"/)
-        const _content = rsp.match(/<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<\/div>\s<div class="clear">/)
-        const _date = rsp.match(/<span id="post-date">([\s\S]*?)<\/span>/)
-        const _readCnt = rsp.match(/<span id="post_view_count">([\s\S]*?)<\/span>/)
-        const _commentCnt = rsp.match(/<span id="post_comment_count">([\s\S]*?)<\/span>/)
+            ?? rsp.match(/\s*?<div id="cnblogs_post_description" style="display: none">([\s\S]*?)<\/div>\s/)
+            ?? rsp.match(/name="description" content="([\s\S]*?)">\s/)
+        const _content = rsp.match(/\s*?<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<\/div>\s<div class="clear">/)
+        const _date = rsp.match(/\s*?<span id="post-date">([\s\S]*?)<\/span>/)
+        const _readCnt = rsp.match(/\s*?<span id="post_view_count">([\s\S]*?)<\/span>/)
+        const _commentCnt = rsp.match(/\s*?<span id="post_comment_count">([\s\S]*?)<\/span>/)
         const _codeHighlightEngineURL = rsp.match(/<script src="([\S]*?)" async onload="markdown_highlight\(\)"><\/script>/)
         const _codeHighlightStyleURL = rsp.match(/<link type="text\/css" rel="stylesheet" href="\/css\/prismjs([\s\S]*?)" \/>/)
             ?? rsp.match(/<link type="text\/css" rel="stylesheet" href="\/css\/hljs([\s\S]*?)" \/>/)
         CodeHighlightEngineURL = _codeHighlightEngineURL[1]
-        CodeHighlightStyleURL = codeHighlightEngine === 2 ? `//www.cnblogs.com/css/prismjs${_codeHighlightStyleURL[1]}`
+        CodeHighlightStyleURL = Config.codeHighlightEngine === 2 ? `//www.cnblogs.com/css/prismjs${_codeHighlightStyleURL[1]}`
             : `//www.cnblogs.com/css/hljs${_codeHighlightStyleURL[1]}`
         const desc = _desc[1].trim()
         const content = _content[1].trim()
@@ -30,6 +30,24 @@ function postsFetch(url) {
         const commentCnt = _commentCnt[1].trim()
         return {url, desc, content, date, readCnt, commentCnt}
     })
+}
+
+async function replacePostsByFetch(url) {
+    const rsp = await Fetch(url)
+    const _desc = rsp.match(/>\s*?<br class="more">([\s\S]*?)<br class="more">\s/)
+        ?? rsp.match(/>\s*?<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<br class="more">\s/)
+        ?? rsp.match(/\s*?<div id="cnblogs_post_description" style="display: none">([\s\S]*?)<\/div>\s/)
+        ?? rsp.match(/name="description" content="([\s\S]*?)">\s/)
+    const _content = rsp.match(/\s*?<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<\/div>\s<div class="clear">/)
+    const _date = rsp.match(/\s*?<span id="post-date">([\s\S]*?)<\/span>/)
+    const _readCnt = rsp.match(/\s*?<span id="post_view_count">([\s\S]*?)<\/span>/)
+    const _commentCnt = rsp.match(/\s*?<span id="post_comment_count">([\s\S]*?)<\/span>/)
+    const desc = _desc[1].trim()
+    const content = _content[1].trim()
+    const date = new Date(_date[1].trim()).getTime()
+    const readCnt = _readCnt[1].trim()
+    const commentCnt = _commentCnt[1].trim()
+    return {url, desc, content, date, readCnt, commentCnt}
 }
 
 async function tagAndCategoryFetch(url, key) {
@@ -48,11 +66,11 @@ async function tagAndCategoryFetch(url, key) {
 }
 
 function isTop(e) {
-    if (e.title.indexOf(topTitle) === 0) return true
-    if (e.title.indexOf(topTitle) !== 0) return false
+    if (e.title.indexOf(topToken) === 0) return true
+    if (e.title.indexOf(topToken) !== 0) return false
 }
 
-export async function Posts(postEle, editEle, timeout) {
+async function posts(postEle, editEle) {
     const urlLoaders = []
     const postsMap = {}
 
@@ -63,12 +81,11 @@ export async function Posts(postEle, editEle, timeout) {
         const url = post.href
         const title = post.innerText.trim()
         if (postsMap[url] && postDistinct) continue
+        console.log(await replacePostsByFetch(url))
         const p = postsFetch(url)
         const c = tagAndCategoryFetch(
-            `//www.cnblogs.com/${currentBlogApp}/ajax/CategoriesTags.aspx?blogId=${currentBlogId}&postId=${postID}`, url)
-        const t = Timeout(timeout, {url})
-        urlLoaders.push(Promise.race([p, t]))
-        urlLoaders.push(Promise.race([c, t]))
+            `//www.cnblogs.com/${Config.currentBlogApp}/ajax/CategoriesTags.aspx?blogId=${Config.currentBlogId}&postId=${postID}`, url)
+        urlLoaders.push(p, c)
         postsMap[url] = {url, title, postID}
     }
 
@@ -83,53 +100,7 @@ export async function Posts(postEle, editEle, timeout) {
     ]
 }
 
-export async function PostsHandle(post, edit) {
-    const flag = "posts"
-    Lock(`_${flag}`)
-    const posts = await Posts(post, edit, 1000);
-    Sign(flag)
-    Unlock(`_${flag}`)
-    return posts
-}
-
-export async function IndexHandle() {
-    const flag = "posts"
-    const postEle = Array.from(document.querySelectorAll("body #main .postTitle .postTitle2"))
-    const editEle = Array.from(document.querySelectorAll("body #main .postDesc a"))
-    if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0)
-        return
-    const posts = await PostsHandle(flag, postEle, editEle)
-    console.info(flag, posts)
-}
-
-export async function PostHandle() {
-    const flag = "post"
-    const postEle = Array.from(document.querySelectorAll("body #main #post_detail .postTitle .postTitle2"))
-    const editEle = Array.from(document.querySelectorAll("body #main #post_detail .postDesc a")).filter(e => e.innerText === "编辑")
-    const contentEle = Array.from(document.querySelectorAll("body #main #post_detail #cnblogs_post_body"))
-    if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0 || contentEle.length === 0)
-        return
-    const posts = await PostsHandle(flag, postEle, editEle)
-    posts[0] = {...posts[0], content: contentEle[0].innerHTML.trim()}
-    console.info(flag, posts[0])
-}
-
-export async function PAndTagHandle() {
-    const flag = "posts"
-    const postEle = Array.from(document.querySelectorAll("body #main .PostList .vertical-middle"))
-    const editEle = Array.from(document.querySelectorAll("body #main .PostList .postDesc2 a"))
-    if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0)
-        return
-    const posts = await PostsHandle(flag, postEle, editEle);
-    console.info(flag, posts)
-}
-
-export async function CategoriesAndArchivesHandle() {
-    const flag = "posts"
-    const postEle = Array.from(document.querySelectorAll("body #main .entrylistItem .entrylistItemTitle"))
-    const editEle = Array.from(document.querySelectorAll("body #main .entrylistItem .entrylistItemPostDesc a")).filter(e => e.innerText === "编辑")
-    if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0)
-        return
-    const posts = await PostsHandle(flag, postEle, editEle);
-    console.info(flag, posts)
+export async function PostsHandle(post, edit, timeout = Config.timeout) {
+    const f = posts(post, edit)
+    return await Promise.race([Timeout(timeout, []), f])
 }
