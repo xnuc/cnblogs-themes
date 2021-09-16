@@ -7,33 +7,14 @@ const postDistinct = true
 export var CodeHighlightEngineURL
 export var CodeHighlightStyleURL
 
-function postsFetch(url) {
-    return Fetch(url, async rsp => {
-        const _desc = rsp.match(/>\s*?<br class="more">([\s\S]*?)<br class="more">\s/)
-            ?? rsp.match(/>\s*?<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<br class="more">\s/)
-            ?? rsp.match(/\s*?<div id="cnblogs_post_description" style="display: none">([\s\S]*?)<\/div>\s/)
-            ?? rsp.match(/name="description" content="([\s\S]*?)">\s/)
-        const _content = rsp.match(/\s*?<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<\/div>\s<div class="clear">/)
-        const _date = rsp.match(/\s*?<span id="post-date">([\s\S]*?)<\/span>/)
-        const _readCnt = rsp.match(/\s*?<span id="post_view_count">([\s\S]*?)<\/span>/)
-        const _commentCnt = rsp.match(/\s*?<span id="post_comment_count">([\s\S]*?)<\/span>/)
-        const _codeHighlightEngineURL = rsp.match(/<script src="([\S]*?)" async onload="markdown_highlight\(\)"><\/script>/)
-        const _codeHighlightStyleURL = rsp.match(/<link type="text\/css" rel="stylesheet" href="\/css\/prismjs([\s\S]*?)" \/>/)
-            ?? rsp.match(/<link type="text\/css" rel="stylesheet" href="\/css\/hljs([\s\S]*?)" \/>/)
-        CodeHighlightEngineURL = _codeHighlightEngineURL[1]
-        CodeHighlightStyleURL = Config.codeHighlightEngine === 2 ? `//www.cnblogs.com/css/prismjs${_codeHighlightStyleURL[1]}`
-            : `//www.cnblogs.com/css/hljs${_codeHighlightStyleURL[1]}`
-        const desc = _desc[1].trim()
-        const content = _content[1].trim()
-        const date = new Date(_date[1].trim()).getTime()
-        const readCnt = _readCnt[1].trim()
-        const commentCnt = _commentCnt[1].trim()
-        return {url, desc, content, date, readCnt, commentCnt}
-    })
+export async function PostsHandle(post, edit, timeout = Config.timeout) {
+    const f = posts(post, edit)
+    return await Promise.race([Timeout(timeout, []), f])
 }
 
-async function replacePostsByFetch(url) {
+async function postsByFetch(url) {
     const rsp = await Fetch(url)
+    codeHighlight(rsp)
     const _desc = rsp.match(/>\s*?<br class="more">([\s\S]*?)<br class="more">\s/)
         ?? rsp.match(/>\s*?<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">([\s\S]*?)<br class="more">\s/)
         ?? rsp.match(/\s*?<div id="cnblogs_post_description" style="display: none">([\s\S]*?)<\/div>\s/)
@@ -51,18 +32,17 @@ async function replacePostsByFetch(url) {
 }
 
 async function tagAndCategoryFetch(url, key) {
-    return Fetch(url, rsp => {
-        const tagAndCategory = Array.from(rsp.matchAll(/<a.+?href="(.+?)".*?>(.+?)<\/a>/g))
-        const categories = []
-        tagAndCategory.filter(e => e[1].indexOf("/category/") !== -1).forEach(e => {
-            categories.push({url: e[1], name: e[2]})
-        })
-        const tags = []
-        tagAndCategory.filter(e => e[1].indexOf("/tag/") !== -1).forEach(e => {
-            tags.push({url: e[1], name: e[2]})
-        })
-        return {url: key, tags, categories}
+    const categories = []
+    const tags = []
+    const rsp = await Fetch(url)
+    const tagAndCategory = Array.from(rsp.matchAll(/<a.+?href="(.+?)".*?>(.+?)<\/a>/g))
+    tagAndCategory.filter(e => e[1].indexOf("/category/") !== -1).forEach(e => {
+        categories.push({url: e[1], name: e[2]})
     })
+    tagAndCategory.filter(e => e[1].indexOf("/tag/") !== -1).forEach(e => {
+        tags.push({url: e[1], name: e[2]})
+    })
+    return {url: key, tags, categories}
 }
 
 function isTop(e) {
@@ -81,8 +61,7 @@ async function posts(postEle, editEle) {
         const url = post.href
         const title = post.innerText.trim()
         if (postsMap[url] && postDistinct) continue
-        console.log(await replacePostsByFetch(url))
-        const p = postsFetch(url)
+        const p = postsByFetch(url)
         const c = tagAndCategoryFetch(
             `//www.cnblogs.com/${Config.currentBlogApp}/ajax/CategoriesTags.aspx?blogId=${Config.currentBlogId}&postId=${postID}`, url)
         urlLoaders.push(p, c)
@@ -100,7 +79,12 @@ async function posts(postEle, editEle) {
     ]
 }
 
-export async function PostsHandle(post, edit, timeout = Config.timeout) {
-    const f = posts(post, edit)
-    return await Promise.race([Timeout(timeout, []), f])
+function codeHighlight(r) {
+    if (CodeHighlightEngineURL && CodeHighlightStyleURL) return
+    const _codeHighlightEngineURL = r.match(/<script src="([\S]*?)" async onload="markdown_highlight\(\)"><\/script>/)
+    const _codeHighlightStyleURL = r.match(/<link type="text\/css" rel="stylesheet" href="\/css\/prismjs([\s\S]*?)" \/>/)
+        ?? r.match(/<link type="text\/css" rel="stylesheet" href="\/css\/hljs([\s\S]*?)" \/>/)
+    CodeHighlightEngineURL = _codeHighlightEngineURL[1]
+    CodeHighlightStyleURL = Config.codeHighlightEngine === 2 ? `//www.cnblogs.com/css/prismjs${_codeHighlightStyleURL[1]}`
+        : `//www.cnblogs.com/css/hljs${_codeHighlightStyleURL[1]}`
 }
