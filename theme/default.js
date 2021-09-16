@@ -1,6 +1,6 @@
 import {UpdateHandles} from "../event/dom"
 import {PostsHandle, CodeHighlightEngineURL, CodeHighlightStyleURL} from "../event/posts"
-import {IsLock, IsSign, Lock, Sign, Unlock} from "../util/register";
+import {CanDo, EmptyFunc, IsLock, IsSign, Lock, Sign, Sync, SyncFunc, Unlock} from "../util/sync";
 import {IndexPagerHandle, PagerHandle} from "../event/pager";
 import {Load} from "../util/load"
 
@@ -35,19 +35,18 @@ async function IndexHandle() {
     const flag = "index"
     const postEle = Array.from(document.querySelectorAll("body #main .postTitle .postTitle2"))
     const editEle = Array.from(document.querySelectorAll("body #main .postDesc a"))
-    if (IsSign(flag) || IsLock(`_${flag}`) || postEle.length === 0 || editEle.length === 0)
+    if (CanDo(flag) || postEle.length === 0 || editEle.length === 0)
         return
-    Lock(`_${flag}`)
-    const sites = Sites()
-    const res = await Promise.all([PostsHandle(postEle, editEle), IndexPagerHandle()])
-    const index = {sites, posts: res[0], pager: res[1]}
-    Sign(`${flag}`)
-    Unlock(`_${flag}`)
-    console.info("index", index)
-    await IndexDOM(index)
+    await Sync(flag, EmptyFunc, async () => {
+        const sites = Sites()
+        const res = await Promise.all([PostsHandle(postEle, editEle), IndexPagerHandle()])
+        const index = {sites, posts: res[0], pager: res[1]}
+        console.info("flag", index)
+        IndexDOM(index)
+    }, EmptyFunc)
 }
 
-async function IndexDOM(index) {
+function IndexDOM(index) {
     const theme = document.createElement("div")
     theme.classList.add("blog-theme")
     const body = document.querySelector("body")
@@ -74,7 +73,7 @@ async function PHandle() {
     Lock(`_${flag}`)
     const sites = Sites()
     const posts = await PostsHandle(postEle, editEle)
-    const pager = await PagerHandle(pagerEle[0], 1000)
+    const pager = await PagerHandle(pagerEle[0]?.innerHTML)
     const p = {sites, posts, pager}
     Sign(`${flag}`)
     Unlock(`_${flag}`)
