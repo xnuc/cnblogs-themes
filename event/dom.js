@@ -1,5 +1,8 @@
-export const UpdateHandles = [logHandle]
+import {Config} from "../config/config";
 
-function logHandle(e) {
+export const UpdateHandles = [eventDebug]
+
+function eventDebug(e) {
+    if (!Config.debugMode) return
     console.debug(e)
 }
