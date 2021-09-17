@@ -48,7 +48,7 @@ async function IndexHandle() {
 
 function IndexDOM(index) {
     const theme = document.createElement("div")
-    theme.classList.add("blog-theme")
+    theme.classList.add("theme-blog")
     const body = document.querySelector("body")
     headerDOM(index.sites, theme)
     PostsDOM(index.posts, theme)
@@ -76,7 +76,7 @@ async function PHandle() {
 
 function PDOM(p) {
     const theme = document.createElement("div")
-    theme.classList.add("blog-theme")
+    theme.classList.add("theme-blog")
     const body = document.querySelector("body")
     headerDOM(p.sites, theme)
     PostsDOM(p.posts, theme)
@@ -105,7 +105,7 @@ async function CategoryHandle() {
 function CategoryDOM(category) {
     const theme = document.createElement("div")
     const body = document.querySelector("body")
-    theme.classList.add("blog-theme")
+    theme.classList.add("theme-blog")
     headerDOM(category.sites, theme)
     PostsDOM(category.posts, theme)
     PagerDOM(category.pager, `//${window.location.host}${window.location.pathname}`, theme)
@@ -132,7 +132,7 @@ async function TagHandle() {
 
 function TagDOM(tag) {
     const theme = document.createElement("div")
-    theme.classList.add("blog-theme")
+    theme.classList.add("theme-blog")
     const body = document.querySelector("body")
     headerDOM(tag.sites, theme)
     PostsDOM(tag.posts, theme)
@@ -174,7 +174,7 @@ function tagMateDOM(tags, post) {
 
 function PostDOM(post) {
     const theme = document.createElement("div")
-    theme.classList.add("blog-theme")
+    theme.classList.add("theme-blog")
     const body = document.querySelector("body")
     headerDOM(post.sites, theme)
     const categories = document.createElement("span")
@@ -182,7 +182,7 @@ function PostDOM(post) {
     const tags = document.createElement("span")
     if (post.post.tags.length) tagMateDOM(tags, post.post)
     const article = document.createElement("div")
-    article.classList.add("posts")
+    article.classList.add("theme-posts")
     article.innerHTML = `<article><h3 class="article-title"><a href="${post.post.url}"><span>${post.post.title}</span></a></h3><div class="article-top-meta"><span class="posted-on"><a href="${post.post.url}" rel="bookmark"><time class="entry-date published" datetime="${new Date(post.post.date)}">${new Date(post.post.date).toLocaleDateString()}</time></a></span></div><div class="article-content"><div class="entry">${post.post.content}</div></div><div class="article-footer"><div class="article-meta pull-left">${categories.outerHTML}${tags.outerHTML}</div></div></article>`
     theme.appendChild(article)
     body.appendChild(theme)
@@ -192,18 +192,18 @@ function PostDOM(post) {
 
 function headerDOM(sites, body) {
     const brand = document.createElement("div")
-    brand.classList.add("site-branding")
+    brand.classList.add("theme-branding")
     brand.innerHTML = `<h1 class="site-title"><a href="${sites.url}">${sites.title}</a></h1><p class="site-description">${sites.subtitle}</p>`
     body.appendChild(brand)
     const navigation = document.createElement("nav")
-    navigation.classList.add("site-navigation")
+    navigation.classList.add("theme-navigation")
     navigation.innerHTML = `<ul><li><a href="${sites.url}">主页</a></li><li><a href="${sites.url}p/">归档</a></li></ul>`
     body.appendChild(navigation)
 }
 
 function PagerDOM(pager, url, body) {
     const _pager = document.createElement("div")
-    _pager.classList.add("blog-pager")
+    _pager.classList.add("theme-pager")
     if (pager.cur !== 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur - 1}"><</a><a href="${url}?page=1">1</a>`
     if (pager.cur - 1 > 2) _pager.innerHTML += `...`
     if (pager.cur - 1 > 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur - 1}">${pager.cur - 1}</a>`
@@ -216,7 +216,7 @@ function PagerDOM(pager, url, body) {
 
 function PostsDOM(posts, body) {
     const articles = document.createElement("div")
-    articles.classList.add("posts")
+    articles.classList.add("theme-posts")
     posts.forEach(e => {
         const categories = document.createElement("span")
         if (e.categories.length) categoriesMateDOM(categories, e)
