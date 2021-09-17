@@ -6,7 +6,6 @@ import {Load} from "../util/load"
 import {SitesHandle} from "../event/sites"
 import {Config} from "../config/config"
 
-// route
 (async _ => {
     const paths = window.location.pathname.split("/").filter(e => e !== '')
     while (paths.shift() !== Config.currentBlogApp && paths.length !== 0) {
@@ -33,9 +32,9 @@ import {Config} from "../config/config"
 })()
 
 async function IndexHandle() {
-    const flag = "index"
     const postEle = Array.from(document.querySelectorAll("body #main .postTitle .postTitle2"))
     const editEle = Array.from(document.querySelectorAll("body #main .postDesc a"))
+    const flag = "index"
     if (Done(flag) || postEle.length === 0 || editEle.length === 0)
         return
     await Sync(flag, EmptyFunc, async () => {
@@ -86,7 +85,6 @@ function PDOM(p) {
     codeHighlight()
 }
 
-// category
 async function CategoryHandle() {
     const postEle = Array.from(document.querySelectorAll("body #main .entrylistItem .entrylistItemTitle"))
     const editEle = Array.from(document.querySelectorAll("body #main .entrylistItem .entrylistItemPostDesc a")).filter(e => e.innerText === "编辑")
@@ -115,7 +113,6 @@ function CategoryDOM(category) {
     codeHighlight()
 }
 
-// tag
 async function TagHandle() {
     const postEle = Array.from(document.querySelectorAll("body #main .PostList .vertical-middle"))
     const editEle = Array.from(document.querySelectorAll("body #main .PostList .postDesc2 a"))
@@ -144,7 +141,6 @@ function TagDOM(tag) {
     codeHighlight()
 }
 
-// post
 async function PostHandle() {
     const postEle = Array.from(document.querySelectorAll("body #main #post_detail .postTitle .postTitle2"))
     const editEle = Array.from(document.querySelectorAll("body #main #post_detail .postDesc a")).filter(e => e.innerText === "编辑")
