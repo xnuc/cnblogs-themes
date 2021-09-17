@@ -207,7 +207,7 @@ function PagerDOM(pager, url, body) {
     if (pager.cur !== 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur - 1}"><</a><a href="${url}?page=1">1</a>`
     if (pager.cur - 1 > 2) _pager.innerHTML += `...`
     if (pager.cur - 1 > 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur - 1}">${pager.cur - 1}</a>`
-    _pager.innerHTML += `<a href="${url}?page=${pager.cur}">${pager.cur}</a>`
+    _pager.innerHTML += `<a class="active" href="${url}?page=${pager.cur}">${pager.cur}</a>`
     if (pager.page - pager.cur > 1) _pager.innerHTML += `<a href="${url}?page=${pager.cur + 1}">${pager.cur + 1}</a>`
     if (pager.page - pager.cur > 2) _pager.innerHTML += `...`
     if (pager.cur !== pager.page) _pager.innerHTML += `<a href="${url}?page=${pager.page}">${pager.page}</a><a href="${url}?page=${pager.cur + 1}">></a>`
