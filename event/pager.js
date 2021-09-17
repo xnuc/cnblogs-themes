@@ -16,7 +16,8 @@ export function PagerHandle(pagerHTML) {
 async function pageByFetch(url) {
     const rsp = await Fetch(url)
     const _pager = rsp.match(/>\s*?<div class="pager">([\s\S]*?)<\/div>\s/)
-    return pager(_pager[1])
+    if (_pager) return pager(_pager[1])
+    else return {page: 1, cur: 1}
 }
 
 function pager(pagerHTML) {
