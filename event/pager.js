@@ -8,9 +8,9 @@ export async function IndexPagerHandle(timeout = Config.timeout) {
     return await Promise.race([Timeout(timeout, {page: 1, cur: 1}), f])
 }
 
-export function PagerHandle(pager) {
-    if (!pager) return {page: 1, cur: 1}
-    return pager(pager)
+export function PagerHandle(pagerHTML) {
+    if (!pagerHTML) return {page: 1, cur: 1}
+    return pager(pagerHTML)
 }
 
 async function pageByFetch(url) {

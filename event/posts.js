@@ -1,6 +1,6 @@
 import {Fetch} from "../net/fetch"
-import {Config} from "../config/config";
-import {Timeout} from "../util/timeout";
+import {Config} from "../config/config"
+import {Timeout} from "../util/timeout"
 
 const topToken = "[置顶]"
 const postDistinct = true
