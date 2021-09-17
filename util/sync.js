@@ -3,45 +3,37 @@ const loaded = "loaded"
 export const EmptyFunc = () => {
 }
 
-export function Lock(lock) {
-    document.querySelector("head").setAttribute(lock, locked)
+function lock(_lock) {
+    document.querySelector("head").setAttribute(_lock, locked)
 }
 
-export function Unlock(lock) {
+function unlock(lock) {
     document.querySelector("head").removeAttribute(lock)
 }
 
-export function IsLock(lock) {
-    return document.querySelector("head").getAttribute(lock) === locked
-}
-
-export function Sign(sign) {
-    document.querySelector("head").setAttribute(sign, loaded)
-}
-
-export function IsSign(sign) {
-    return document.querySelector("head").getAttribute(sign) === loaded
+function sign(_sign) {
+    document.querySelector("head").setAttribute(_sign, loaded)
 }
 
 export async function Sync(obj, before = EmptyFunc, func = EmptyFunc, after = EmptyFunc) {
     before()
-    Lock(`_${obj}`)
+    lock(`_${obj}`)
     const r = await func()
-    Sign(obj)
-    Unlock(`_${obj}`)
+    sign(obj)
+    unlock(`_${obj}`)
     after()
     return r
 }
 
 export async function SyncFunc(obj, func = EmptyFunc) {
-    Lock(`_${obj}`)
+    lock(`_${obj}`)
     const r = await func()
-    Sign(obj)
-    Unlock(`_${obj}`)
+    sign(obj)
+    unlock(`_${obj}`)
     return r
 }
 
-export function CanDo(flag) {
+export function Done(flag) {
     return document.querySelector("head").getAttribute('_' + flag) === locked
         || document.querySelector("head").getAttribute(flag) === loaded
 }
