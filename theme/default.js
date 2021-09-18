@@ -193,7 +193,7 @@ function PostDOM(post) {
 function headerDOM(sites, body) {
     const brand = document.createElement("div")
     brand.classList.add("theme-branding")
-    brand.innerHTML = `<img class="avatar" src="" alt="头像"><h1 class="site-title"><a href="${sites.url}">${sites.title}</a></h1><p class="site-description">${sites.subtitle}</p>`
+    brand.innerHTML = `<h1 class="site-title"><a href="${sites.url}">${sites.title}</a></h1><p class="site-description">${sites.subtitle}</p>`
     body.appendChild(brand)
     const navigation = document.createElement("nav")
     navigation.classList.add("theme-navigation")
