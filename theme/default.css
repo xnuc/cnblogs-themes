@@ -28,6 +28,7 @@ body {
 }
 
 a {
+    color: var(--theme-color);
     text-decoration: none;
 }
 
@@ -35,10 +36,9 @@ a:active, a:hover {
     outline: 0;
 }
 
-pre {
-    box-sizing: border-box;
+pre code {
+    font-size: 1.3rem !important;
 }
-
 
 /*theme element*/
 @media (min-width: 768px) {

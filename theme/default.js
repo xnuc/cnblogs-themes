@@ -231,7 +231,7 @@ function codeHighlight() {
     if (!document.querySelector("pre code")) return
     Load(CodeHighlightStyleURL, "css")
     Load(CodeHighlightEngineURL, "js", async () => {
-        if (Config.codeHighlightEngine === 1) document.querySelectorAll('pre code').forEach(e => e.innerHTML = hljs.highlightAuto(e.innerHTML).value)
+        if (Config.codeHighlightEngine === 1) hljs.initHighlighting()
         if (Config.codeHighlightEngine === 2) Prism.highlightAll()
     })
 }
