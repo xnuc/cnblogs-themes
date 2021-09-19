@@ -1,15 +1,15 @@
-/*hide cnblogs*/
+/*inner*/
 #top_nav, #home, #page_end_html {
     display: none;
 }
 
-/*variable*/
 :root {
     --theme-color: black;
     --btn-color: #212121;
     --mate-color: #9e9e9e;
 }
 
+/*outer*/
 /*global tag*/
 *, *::before, *::after {
     box-sizing: border-box;
@@ -38,6 +38,10 @@ a:active, a:hover {
 
 pre code {
     font-size: 1.3rem !important;
+}
+
+div, article, span, p, a {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Segoe UI Symbol", "Android Emoji", EmojiSymbols, "Segoe UI", "Lucida Grande", Helvetica, "Microsoft YaHei", FreeSans, Arimo, "Droid Sans", "wenquanyi micro hei", "Hiragino Sans GB", "Hiragino Sans GB W3", Arial, sans-serif;
 }
 
 /*theme element*/
