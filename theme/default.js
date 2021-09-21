@@ -1,9 +1,9 @@
-import {UpdateHandles} from "../event/dom"
-import {PostsHandle, CodeHighlightEngineURL, CodeHighlightStyleURL} from "../event/posts"
+import {UpdateHandles} from "../plugins/dom"
+import {CodeHighlightEngineURL, CodeHighlightStyleURL, PostsHandle} from "../plugins/posts"
 import {Done, EmptyFunc, Sync} from "../util/sync"
-import {IndexPagerHandle, PagerHandle} from "../event/pager"
+import {IndexPagerHandle, PagerHandle} from "../plugins/pager"
 import {Load} from "../util/load"
-import {SitesHandle} from "../event/sites"
+import {SitesHandle} from "../plugins/sites"
 import {Config} from "../config/config"
 
 (async _ => {
